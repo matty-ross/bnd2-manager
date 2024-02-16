@@ -74,4 +74,4 @@ class BundleFile:
             json_bundle['resource_entries'].append(json_resource_entry)
 
         with open(self.file_name, 'w') as fp:
-            json.dump(json_bundle, fp)
+            json.dump(json_bundle, fp, indent=4)

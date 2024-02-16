@@ -36,16 +36,16 @@ class Manager:
     def pack(self) -> None:
         self.bundle_file.load()
 
-        self.bundle.resource_entries.clear()
+        self.bundle.platform.platform_type = self.bundle_file.bundle.platform
+        self.bundle.compressed = self.bundle_file.bundle.use_zlib_compression
+        self.bundle.resource_entries = []
+
         for entry in self.bundle_file.bundle.resource_entries:
             resource_entry = self._pack_resource_entry(entry)
             self.bundle.resource_entries.append(resource_entry)
 
         if self.bundle_file.bundle.use_debug_data:
             self._pack_debug_data()
-        
-        self.bundle.platform.platform_type = self.bundle_file.bundle.platform
-        self.bundle.compressed = self.bundle_file.bundle.use_zlib_compression
 
 
     def _unpack_debug_data(self) -> None:
@@ -91,6 +91,7 @@ class Manager:
         resource_entry.id = entry.id
         resource_entry.type = entry.type
         resource_entry.data = [b'', b'', b'']
+        resource_entry.import_entries = []
 
         directory = self.directory / f'{resource_entry.type :08X}'
 
@@ -100,6 +101,7 @@ class Manager:
                 with open(file_name, 'rb') as fp:
                     resource_entry.data[i] = fp.read()
 
-        self.bundle.load_import_entries(resource_entry, entry.imports_count, entry.imports_offset)
+        if (not entry.imports_offset is None) and (not entry.imports_count is None):
+            self.bundle.load_import_entries(resource_entry, entry.imports_count, entry.imports_offset)
 
         return resource_entry
