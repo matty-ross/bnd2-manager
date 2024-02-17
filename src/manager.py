@@ -5,16 +5,29 @@ import bnd2
 import bundle_file
 
 
-BUNDLE_FILE_NAME = 'bundle.json'
-DEBUG_DATA_FILE_NAME = 'debug_data.xml'
-
-
 class Manager:
 
     def __init__(self, bundle: bnd2.BundleV2, directory: str):
         self.bundle = bundle
         self.directory = pathlib.Path(directory)
-        self.bundle_file = bundle_file.BundleFile(self.directory / BUNDLE_FILE_NAME)
+        self.bundle_file = bundle_file.BundleFile(self.bundle_file_name)
+
+
+    @property
+    def bundle_name(self) -> str:
+        return pathlib.Path(self.bundle.file_name).stem
+
+
+    @property
+    def bundle_file_name(self) -> str:
+        file_name = (self.directory / (self.bundle_name + '_bundle')).with_suffix('.json')
+        return str(file_name)
+
+
+    @property
+    def debug_data_file_name(self) -> str:
+        file_name = (self.directory / (self.bundle_name + '_debug_data')).with_suffix('.xml')
+        return str(file_name)
 
 
     def unpack(self) -> None:
@@ -49,8 +62,7 @@ class Manager:
 
 
     def _unpack_debug_data(self) -> None:
-        file_name = self.directory / DEBUG_DATA_FILE_NAME
-        with open(file_name, 'wb') as fp:
+        with open(self.debug_data_file_name, 'wb') as fp:
             fp.write(self.bundle.debug_data)
 
 
@@ -81,8 +93,7 @@ class Manager:
 
 
     def _pack_debug_data(self) -> None:
-        file_name = self.directory / DEBUG_DATA_FILE_NAME
-        with open(file_name, 'rb') as fp:
+        with open(self.debug_data_file_name, 'rb') as fp:
             self.bundle.debug_data = fp.read()
 
 
