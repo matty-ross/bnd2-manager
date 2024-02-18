@@ -40,8 +40,8 @@ class Manager:
             self._unpack_debug_data()
         
         for resource_entry in self.bundle.resource_entries:
-            entry = self._unpack_resource_entry(resource_entry)
-            self.bundle_file.bundle.resource_entries.append(entry)
+            bundle_file_resource_entry = self._unpack_resource_entry(resource_entry)
+            self.bundle_file.bundle.resource_entries.append(bundle_file_resource_entry)
             
         self.bundle_file.save()
 
@@ -53,8 +53,8 @@ class Manager:
         self.bundle.compressed = self.bundle_file.bundle.use_zlib_compression
         self.bundle.resource_entries = []
 
-        for entry in self.bundle_file.bundle.resource_entries:
-            resource_entry = self._pack_resource_entry(entry)
+        for bundle_file_resource_entry in self.bundle_file.bundle.resource_entries:
+            resource_entry = self._pack_resource_entry(bundle_file_resource_entry)
             self.bundle.resource_entries.append(resource_entry)
 
         if self.bundle_file.bundle.use_debug_data:
@@ -71,25 +71,25 @@ class Manager:
         if not directory.exists():
             directory.mkdir()
 
-        imports_offset = len(resource_entry.data[0])
-        imports_count = len(resource_entry.import_entries)
-
-        self.bundle.store_import_entries(resource_entry, imports_offset)
-
         for i in range(3):
             data = resource_entry.data[i]
             if data:
-                file_name = directory / f'{resource_entry.id :08X}_{i + 1}.bin'
+                file_name = (directory / f'{resource_entry.id :08X}_{i + 1}').with_suffix('.bin')
                 with open(file_name, 'wb') as fp:
                     fp.write(data)
 
-        entry = bundle_file.ResourceEntry()
-        entry.id = resource_entry.id
-        entry.type = resource_entry.type
-        entry.imports_offset = imports_offset if imports_count > 0 else None
-        entry.imports_count = imports_count if imports_count > 0 else None
+        bundle_file_resource_entry = bundle_file.ResourceEntry()
+        bundle_file_resource_entry.id = resource_entry.id
+        bundle_file_resource_entry.type = resource_entry.type
+        bundle_file_resource_entry.import_entries = []
+        
+        for import_entry in resource_entry.import_entries:
+            bundle_file_import_entry = bundle_file.ImportEntry()
+            bundle_file_import_entry.id = import_entry.id
+            bundle_file_import_entry.offset = import_entry.offset
+            bundle_file_resource_entry.import_entries.append(bundle_file_import_entry)
 
-        return entry
+        return bundle_file_resource_entry
 
 
     def _pack_debug_data(self) -> None:
@@ -97,22 +97,25 @@ class Manager:
             self.bundle.debug_data = fp.read()
 
 
-    def _pack_resource_entry(self, entry: bundle_file.ResourceEntry) -> bnd2.ResourceEntry:
+    def _pack_resource_entry(self, bundle_file_resource_entry: bundle_file.ResourceEntry) -> bnd2.ResourceEntry:
         resource_entry = bnd2.ResourceEntry()
-        resource_entry.id = entry.id
-        resource_entry.type = entry.type
+        resource_entry.id = bundle_file_resource_entry.id
+        resource_entry.type = bundle_file_resource_entry.type
         resource_entry.data = [b'', b'', b'']
         resource_entry.import_entries = []
+
+        for bundle_file_import_entry in bundle_file_resource_entry.import_entries:
+            import_entry = bnd2.ImportEntry()
+            import_entry.id = bundle_file_import_entry.id
+            import_entry.offset = bundle_file_import_entry.offset
+            resource_entry.import_entries.append(import_entry)
 
         directory = self.directory / f'{resource_entry.type :08X}'
 
         for i in range(3):
-            file_name = directory / f'{resource_entry.id :08X}_{i + 1}.bin'
+            file_name = (directory / f'{resource_entry.id :08X}_{i + 1}').with_suffix('.bin')
             if file_name.exists():
                 with open(file_name, 'rb') as fp:
                     resource_entry.data[i] = fp.read()
-
-        if (not entry.imports_offset is None) and (not entry.imports_count is None):
-            self.bundle.load_import_entries(resource_entry, entry.imports_count, entry.imports_offset)
 
         return resource_entry

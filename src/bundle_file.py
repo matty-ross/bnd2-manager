@@ -18,11 +18,16 @@ BND2_PLATFORM_TO_STRING = {
 
 
 @dataclass
+class ImportEntry:
+    id: int = None
+    offset: int = None
+
+
+@dataclass
 class ResourceEntry:
     id: int = None
     type: int = None
-    imports_offset: int = None
-    imports_count: int = None
+    import_entries: list[ImportEntry] = None
 
 
 @dataclass
@@ -53,8 +58,14 @@ class BundleFile:
             resource_entry = ResourceEntry()
             resource_entry.id = int(json_resource_entry['id'], 16)
             resource_entry.type = int(json_resource_entry['type'], 16)
-            resource_entry.imports_offset = int(json_resource_entry['imports_offset'], 16) if not json_resource_entry['imports_offset'] is None else None
-            resource_entry.imports_count = json_resource_entry['imports_count']
+            resource_entry.import_entries = []
+
+            for json_import_entry in json_resource_entry['import_entries']:
+                import_entry = ImportEntry()
+                import_entry.id = int(json_import_entry['id'], 16)
+                import_entry.offset = int(json_import_entry['offset'], 16)
+                resource_entry.import_entries.append(import_entry)
+            
             self.bundle.resource_entries.append(resource_entry)
 
 
@@ -69,8 +80,14 @@ class BundleFile:
             json_resource_entry = {}
             json_resource_entry['id'] = f'{resource_entry.id :08X}'
             json_resource_entry['type'] = f'{resource_entry.type :08X}'
-            json_resource_entry['imports_offset'] = f'{resource_entry.imports_offset :08X}' if not resource_entry.imports_offset is None else None
-            json_resource_entry['imports_count'] = resource_entry.imports_count
+            json_resource_entry['import_entries'] = []
+
+            for import_entry in resource_entry.import_entries:
+                json_import_entry = {}
+                json_import_entry['id'] = f'{import_entry.id :08X}'
+                json_import_entry['offset'] = f'{import_entry.offset :08X}'
+                json_resource_entry['import_entries'].append(json_import_entry)
+            
             json_bundle['resource_entries'].append(json_resource_entry)
 
         with open(self.file_name, 'w') as fp:

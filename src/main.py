@@ -20,8 +20,6 @@ def pack_bundle(bundle: bnd2.BundleV2, directory: str) -> None:
 def main() -> None:
     tkinter.Tk().withdraw()
 
-    action = input("[u]npack or [p]ack ? ")
-
     file_names = tkinter.filedialog.askopenfilenames()
     bundles: list[bnd2.BundleV2] = []
     for file_name in file_names:
@@ -29,6 +27,8 @@ def main() -> None:
         bundles.append(bundle)
 
     directory = tkinter.filedialog.askdirectory()
+
+    action = input("[u]npack or [p]ack ? ")
 
     if action == 'u':
         for bundle in bundles:
