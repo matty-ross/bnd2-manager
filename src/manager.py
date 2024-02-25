@@ -38,11 +38,11 @@ class Manager:
 
         if self.bundle.debug_data:
             self._unpack_debug_data()
-        
+
         for resource_entry in self.bundle.resource_entries:
             bundle_file_resource_entry = self._unpack_resource_entry(resource_entry)
             self.bundle_file.bundle.resource_entries.append(bundle_file_resource_entry)
-            
+
         self.bundle_file.save()
 
 
@@ -82,7 +82,7 @@ class Manager:
         bundle_file_resource_entry.id = resource_entry.id
         bundle_file_resource_entry.type = resource_entry.type
         bundle_file_resource_entry.import_entries = []
-        
+
         for import_entry in resource_entry.import_entries:
             bundle_file_import_entry = bundle_file.ImportEntry()
             bundle_file_import_entry.id = import_entry.id

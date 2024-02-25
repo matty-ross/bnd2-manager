@@ -39,7 +39,7 @@ class Bundle:
 
 
 class BundleFile:
-    
+
     def __init__(self, file_name: str):
         self.file_name = file_name
         self.bundle = Bundle()
@@ -48,7 +48,7 @@ class BundleFile:
     def load(self) -> None:
         with open(self.file_name, 'r') as fp:
             json_bundle = json.load(fp)
-        
+
         self.bundle.platform = BND2_PLATFORM_FROM_STRING[json_bundle['platform']]
         self.bundle.use_debug_data = json_bundle['use_debug_data']
         self.bundle.use_zlib_compression = json_bundle['use_zlib_compression']
@@ -65,7 +65,7 @@ class BundleFile:
                 import_entry.id = int(json_import_entry['id'], 16)
                 import_entry.offset = int(json_import_entry['offset'], 16)
                 resource_entry.import_entries.append(import_entry)
-            
+
             self.bundle.resource_entries.append(resource_entry)
 
 
@@ -87,7 +87,7 @@ class BundleFile:
                 json_import_entry['id'] = f'{import_entry.id :08X}'
                 json_import_entry['offset'] = f'{import_entry.offset :08X}'
                 json_resource_entry['import_entries'].append(json_import_entry)
-            
+
             json_bundle['resource_entries'].append(json_resource_entry)
 
         with open(self.file_name, 'w') as fp:
