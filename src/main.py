@@ -29,17 +29,19 @@ def main() -> None:
     directory = tkinter.filedialog.askdirectory()
 
     action = input("[u]npack or [p]ack ? ")
-
-    if action == 'u':
-        for bundle in bundles:
-            print(f"Unpacking bundle '{bundle.file_name}'...")
-            unpack_bundle(bundle, directory)
-            print("Done.")
-    elif action == 'p':
-        for bundle in bundles:
-            print(f"Packing bundle '{bundle.file_name}'...")
-            pack_bundle(bundle, directory)
-            print("Done.")
+    match action:
+        case 'u' | 'U':
+            for bundle in bundles:
+                print(f"Unpacking bundle '{bundle.file_name}'...")
+                unpack_bundle(bundle, directory)
+                print("Done.")
+        case 'p' | 'P':
+            for bundle in bundles:
+                print(f"Packing bundle '{bundle.file_name}'...")
+                pack_bundle(bundle, directory)
+                print("Done.")
+        case _:
+            print("Unknown option!")
 
 
 if __name__ == '__main__':
