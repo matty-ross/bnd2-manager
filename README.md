@@ -7,8 +7,7 @@ A tool for unpacking and packing Burnout Paradise's BundleV2 files.
 
 ## Usage
 ```
-cd .\src\
-python .\main.py
+python .\src\main.py
 ```
 ### Unpacking
 You will be prompted to choose bundles which you want to unpack.
